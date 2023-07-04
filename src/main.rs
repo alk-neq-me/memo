@@ -17,7 +17,7 @@ use crate::{
         colors::Color, database::{
             drop_database, 
             count
-        }
+        }, clean_console::clean_console
     }, 
     models::{
         book::Book, 
@@ -172,6 +172,7 @@ fn main() {
 
     // get task in a book
     if let Some(book) = &args.book {
+        clean_console();
         if args.completed {
             let tasks = get_tasks(&conn, &book, true).expect("Faied");
             for task in tasks {

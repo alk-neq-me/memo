@@ -7,6 +7,9 @@ use clap::Parser;
     author = "Aung koko Lwin",
     about = "🌱 A terminal-based memo note app 📝"
 )]
+#[command(
+    help_template = "{about-section}\nVersion: {version}\nAuthor: {author}\n\n{usage-heading} {usage}\n\n{all-args} {tab}"
+)]
 pub struct Args {
 	#[arg(long)]
 	pub book:  Option<String>,  // get tasks in a book
