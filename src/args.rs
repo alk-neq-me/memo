@@ -4,7 +4,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(
 	version = "1.0",
-    author = "이유준",
+    author = "Aung koko Lwin",
     about = "🌱 A terminal-based memo note app 📝"
 )]
 pub struct Args {
