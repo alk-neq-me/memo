@@ -199,7 +199,7 @@ fn main() {
         // update_task(&conn, &payload, task_id).expect("Failed complete_task");
         match make_completed(&conn, task_id) {
             Ok(_) => {
-                let colorize = Color::Purple("Created 💥");
+                let colorize = Color::Purple("Updated 💥");
                 println!("{}", format!("[ {} ] Task completed successfully.", colorize));
             },
             Err(err) => {
