@@ -108,7 +108,7 @@ fn main() {
                     let colorize = Color::Delete(&task.title);
                     println!("{:?} ✅ {}", task.id, colorize);
                 } else {
-                    println!("{:?} 🚀 {} {:?}", task.id, task.title, task.book_id);
+                    println!("{:?} 🚀 {}", task.id, task.title);
                 }
             }
         }
