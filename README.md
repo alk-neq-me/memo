@@ -10,16 +10,17 @@ memo [OPTIONS]
 
 ## Options
 
-- `--book`: Open the memo book.
+- `--book <book_name>`: Open the memo book.
 - `--list-book`: List all available memo books.
 - `--list-task`: List all tasks in the current memo book.
 - `--add-book <ADD_BOOK>`: Create a new memo book with the specified name.
 - `--remove-book <REMOVE_BOOK>`: Remove the memo book with the specified book ID.
-- `--add-task <ADD_TASK>`: Add a new task to the current memo book.
-- `--remove-task <REMOVE_TASK>`: Remove the task with the specified task ID from the current memo book.
-- `--complete-task <COMPLETE_TASK>`: Mark the task with the specified task ID as completed in the current memo book.
+- `--book <book_name> --add-task <todo_text>`: Add a new task to the current memo book.
+- `--remove-task <task_id>`: Remove the task with the specified task ID from the current memo book.
+- `--book <book_name> --remove-task <task_id>`: Remove the task with the specified task ID from the current memo book and show that book.
+- `--complete-task <task_id>`: Mark the task with the specified task ID as completed in the current memo book.
 - `--count`: Display the total number of tasks in the current memo book.
-- `--completed`: List all completed tasks in the current memo book.
+- `--completed`: List all completed tasks for `--list-task` and `--book` in the current memo book.
 - `--clean-all`: Remove all memo books and tasks.
 - `-h, --help`: Print the help information.
 - `-V, --version`: Print the version of the application.
