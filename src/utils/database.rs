@@ -2,7 +2,7 @@ extern crate rusqlite;
 
 use rusqlite::{Connection, Result};
 
-use crate::models::base::Count;
+use crate::models::base::Info;
 
 pub fn create_task(conn: &Connection) -> Result<()> {
 	conn.execute(r#"
@@ -27,10 +27,12 @@ pub fn create_book(conn: &Connection) -> Result<()> {
 	Ok(())
 }
 
-pub fn count(conn: &Connection) -> Result<Count> {
+pub fn get_info(conn: &Connection) -> Result<Info> {
     let books = conn.query_row("SELECT COUNT(*) FROM book", [], |row| row.get(0))?;
     let tasks = conn.query_row("SELECT COUNT(*) FROM task", [], |row| row.get(0))?;
-    Ok(Count { books, tasks })
+    let completed = conn.query_row("SELECT COUNT(*) FROM task WHERE is_completed = true", [], |row| row.get(0))?;
+    let pending = conn.query_row("SELECT COUNT(*) FROM task WHERE is_completed = false", [], |row| row.get(0))?;
+    Ok(Info { books, tasks, completed, pending })
 }
 
 pub fn drop_database(conn: &Connection) -> Result<()> {

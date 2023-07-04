@@ -23,7 +23,6 @@ pub struct Args {
     #[arg(long)]
     pub add_book: Option<String>,
 
-    #[arg(long)]
     #[arg(long, help = "Type book id")]
     pub remove_book: Option<u32>,
 
@@ -36,8 +35,11 @@ pub struct Args {
     #[arg(long, help="Type task id")]
     pub complete_task: Option<u32>,
 
-    #[arg(long)]
-    pub count: bool,
+    #[arg(long, help="Type task id")]
+    pub toggle_task: Option<u32>,
+
+    #[arg(long, short)]
+    pub info: bool,
 
     #[arg(long)]
     pub completed: bool,

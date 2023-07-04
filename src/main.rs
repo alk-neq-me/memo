@@ -10,13 +10,13 @@ use std::io::{stdin, stdout, Write};
 use rusqlite::Connection;
 
 use args::parse_args;
+use services::tasks::toggle_completed;
 
 use crate::{
     utils::{
         table_initialize::table_initialize, 
         colors::Color, database::{
-            drop_database, 
-            count
+            drop_database, get_info, 
         }, clean_console::clean_console
     }, 
     models::{
@@ -34,7 +34,7 @@ use crate::{
             add_task, 
             remove_task, 
             get_tasks, 
-            make_completed
+            make_completed, calculate_completion_percentage
         }
     }
 };
@@ -52,11 +52,11 @@ fn main() {
         match book_added {
             Ok(book) => {
                 let colorize = Color::Green("Created 🌱");
-                println!("{}", format!("[ {} ] Book `{}` added successfully.", colorize, book.label));
+                println!("\n{}", format!("[ {} ] Book `{}` added successfully.", colorize, book.label));
             },
             Err(err) => {
                 let colorize = Color::Red("Failed 💔");
-                println!("{}", format!("[ {} ] Failed to add the book. Error: {}", colorize, err));
+                println!("\n{}", format!("[ {} ] Failed to add the book. Error: {}", colorize, err));
             }
         }
     }
@@ -74,11 +74,11 @@ fn main() {
                 match remove_book(&conn, book_id) {
                     Ok(_) => {
                         let colorize = Color::Green("Deleted 🗑️");
-                        println!("{}", format!("[ {} ] Book `{}` deleted successfully.", colorize, book_id));
+                        println!("\n{}", format!("[ {} ] Book `{}` deleted successfully.", colorize, book_id));
                     },
                     Err(err) => {
                         let colorize = Color::Red("Failed 💔");
-                        println!("{}", format!("[ {} ] Failed to delete the book. Error: {}", colorize, err));
+                        println!("\n{}", format!("[ {} ] Failed to delete the book. Error: {}", colorize, err));
                     }
                 }
             },
@@ -95,15 +95,14 @@ fn main() {
     }
 
     if args.list_task {
-        let tasks: Vec<Task> = get_all_tasks(&conn).expect(&format!("[ {} ] failed get all task", Color::Red("FAILED")));
         if args.completed {
+            let tasks: Vec<Task> = get_all_tasks(&conn, true).unwrap();
             for task in tasks {
-                if task.is_completed {
-                    let colorize = Color::Delete(&task.title);
-                    println!("{:?} ✅ {}", task.id, colorize);
-                }
+                let colorize = Color::Delete(&task.title);
+                println!("{:?} ✅ {}", task.id, colorize);
             }
         } else {
+            let tasks: Vec<Task> = get_all_tasks(&conn, false).unwrap();
             for task in tasks {
                 if task.is_completed {
                     let colorize = Color::Delete(&task.title);
@@ -126,15 +125,15 @@ fn main() {
             match add_task(&conn, &new_task, book_label) {
                 Ok(_) => {
                     let colorize = Color::Green("Created 🌱");
-                    println!("{}", format!("[ {} ] Task added successfully.", colorize));
+                    println!("\n{}", format!("[ {} ] Task added successfully.", colorize));
                 },
                 Err(rusqlite::Error::QueryReturnedNoRows) => {
                     let colorize = Color::Red("Not Found 🤔");
-                    println!("{}", format!("[ {} ] Failed to add the task not found book", colorize));
+                    println!("\n{}", format!("[ {} ] Failed to add the task not found book", colorize));
                 },
                 Err(err) => {
                     let colorize = Color::Red("Failed 💔");
-                    println!("{}", format!("[ {} ] Failed to add the task. Error: {}", colorize, err));
+                    println!("\n{}", format!("[ {} ] Failed to add the task. Error: {}", colorize, err));
                 },
             }
         } else {
@@ -155,11 +154,11 @@ fn main() {
                 match remove_task(&conn, task_id) {
                     Ok(_) => {
                         let colorize = Color::Green("Deleted 🗑️");
-                        println!("{}", format!("[ {} ] Task `{}` deleted successfully.", colorize, task_id));
+                        println!("\n{}", format!("[ {} ] Task `{}` deleted successfully.", colorize, task_id));
                     },
                     Err(err) => {
                         let colorize = Color::Red("Failed 💔");
-                        println!("{}", format!("[ {} ] Failed to delete the task. Error: {}", colorize, err));
+                        println!("\n{}", format!("[ {} ] Failed to delete the task. Error: {}", colorize, err));
                     }
                 }
             },
@@ -194,17 +193,42 @@ fn main() {
 
     // make complete task or update
     if let Some(task_id) = &args.complete_task {
-        // let original = get_single_task(&conn, task_id).unwrap();
-        // let payload = Task { is_completed: true, ..original };
-        // update_task(&conn, &payload, task_id).expect("Failed complete_task");
-        match make_completed(&conn, task_id) {
-            Ok(_) => {
+        let updated = make_completed(&conn, task_id);
+        match updated {
+            Ok(task) => {
                 let colorize = Color::Purple("Updated 💥");
-                println!("{}", format!("[ {} ] Task completed successfully.", colorize));
+                println!("\n{}", format!("[ {} ] Task completed successfully.", colorize));
+                if task.is_completed {
+                    let colorize = Color::Delete(&task.title);
+                    println!("{:?} ✅ {}", task.id, colorize);
+                } else {
+                    println!("{:?} 🚀 {}", task.id, task.title);
+                }
             },
             Err(err) => {
                 let colorize = Color::Red("Failed 💔");
-                println!("{}", format!("[ {} ] Task complet failed. Error: {err:?}", colorize));
+                println!("\n{}", format!("[ {} ] Task complet failed. Error: {err:?}", colorize));
+            },
+        }
+    }
+
+    // toggle task
+    if let Some(task_id) = &args.toggle_task {
+        let updated = toggle_completed(&conn, task_id);
+        match updated {
+            Ok(task) => {
+                let colorize = Color::Purple("Updated 💥");
+                println!("\n{}", format!("[ {} ] Task completed successfully.", colorize));
+                if task.is_completed {
+                    let colorize = Color::Delete(&task.title);
+                    println!("{:?} ✅ {}", task.id, colorize);
+                } else {
+                    println!("{:?} 🚀 {}", task.id, task.title);
+                }
+            },
+            Err(err) => {
+                let colorize = Color::Red("Failed 💔");
+                println!("\n{}", format!("[ {} ] Task complet failed. Error: {err:?}", colorize));
             },
         }
     }
@@ -222,11 +246,11 @@ fn main() {
                 match drop_database(&conn) {
                     Ok(_) => {
                         let colorize = Color::Purple("Clean All 🗑️");
-                        println!("{}", format!("[ {} ] Clean all successfully.", colorize));
+                        println!("\n{}", format!("[ {} ] Clean all successfully.", colorize));
                     },
                     Err(err) => {
                         let colorize = Color::Red("Failed 💔");
-                        println!("{}", format!("[ {} ] Failed to delete the task. Error: {}", colorize, err));
+                        println!("\n{}", format!("[ {} ] Failed to delete the task. Error: {}", colorize, err));
                     }
                 }
             },
@@ -235,8 +259,11 @@ fn main() {
         }
     }
 
-    if args.count {
-        let count = count(&conn).expect("FAILED count");
-        println!("{:?}", count);
+    if args.info {
+        let info = get_info(&conn).expect("FAILED count");
+        let percentage = calculate_completion_percentage(&conn).unwrap();
+        println!("\n\n{:.0}% of all tasks complete.", percentage);
+
+        println!("{} done {} pending {} books", Color::Green(&info.completed.to_string()), Color::Purple(&info.pending.to_string()), Color::Blue(&info.books.to_string()));
     }
 }
