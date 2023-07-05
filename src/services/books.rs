@@ -27,7 +27,6 @@ pub fn add_book<'a>(conn: &Connection, book: &'a Book) -> Result<&'a Book> {
 }
 
 pub fn remove_book(conn: &Connection, id: &u32) -> Result<()> {
-    conn.execute("PRAGMA foreign_keys = ON", [])?;
 	conn.execute(r#"
         DELETE FROM book
         WHERE id = ?1

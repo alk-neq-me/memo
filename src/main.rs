@@ -45,6 +45,7 @@ fn main() {
     let args = parse_args();
 
     table_initialize(&conn);
+    clean_console();
 
     if let Some(label) = &args.add_book {
         let book = Book { label: label.to_owned(), id: Some(0) };
@@ -165,13 +166,40 @@ fn main() {
             "n" | "no" => println!("Canceled to delete task"),
             _ => println!("Invalid input. Please enter 'y' or 'n'.")
         }
+    }
 
-        
+    // make complete task or update
+    if let Some(task_id) = &args.complete_task {
+        let updated = make_completed(&conn, task_id);
+        match updated {
+            Ok(_) => {
+                let colorize = Color::Purple("Updated 💥");
+                println!("\n{}", format!("[ {} ] Task completed successfully.", colorize));
+            },
+            Err(err) => {
+                let colorize = Color::Red("Failed 💔");
+                println!("\n{}", format!("[ {} ] Task completed failed. Error: {err:?}", colorize));
+            },
+        }
+    }
+
+    // toggle task
+    if let Some(task_id) = &args.toggle_task {
+        let updated = toggle_completed(&conn, task_id);
+        match updated {
+            Ok(_) => {
+                let colorize = Color::Purple("Updated 💥");
+                println!("\n{}", format!("[ {} ] Task toggle successfully.", colorize));
+            },
+            Err(err) => {
+                let colorize = Color::Red("Failed 💔");
+                println!("\n{}", format!("[ {} ] Task toggle failed. Error: {err:?}", colorize));
+            },
+        }
     }
 
     // get task in a book
     if let Some(book) = &args.book {
-        clean_console();
         if args.completed {
             let tasks = get_tasks(&conn, &book, true).expect("Faied");
             for task in tasks {
@@ -188,48 +216,6 @@ fn main() {
                     println!("{:?} 🚀 {}", task.id, task.title);
                 }
             }
-        }
-    }
-
-    // make complete task or update
-    if let Some(task_id) = &args.complete_task {
-        let updated = make_completed(&conn, task_id);
-        match updated {
-            Ok(task) => {
-                let colorize = Color::Purple("Updated 💥");
-                println!("\n{}", format!("[ {} ] Task completed successfully.", colorize));
-                if task.is_completed {
-                    let colorize = Color::Delete(&task.title);
-                    println!("{:?} ✅ {}", task.id, colorize);
-                } else {
-                    println!("{:?} 🚀 {}", task.id, task.title);
-                }
-            },
-            Err(err) => {
-                let colorize = Color::Red("Failed 💔");
-                println!("\n{}", format!("[ {} ] Task complet failed. Error: {err:?}", colorize));
-            },
-        }
-    }
-
-    // toggle task
-    if let Some(task_id) = &args.toggle_task {
-        let updated = toggle_completed(&conn, task_id);
-        match updated {
-            Ok(task) => {
-                let colorize = Color::Purple("Updated 💥");
-                println!("\n{}", format!("[ {} ] Task completed successfully.", colorize));
-                if task.is_completed {
-                    let colorize = Color::Delete(&task.title);
-                    println!("{:?} ✅ {}", task.id, colorize);
-                } else {
-                    println!("{:?} 🚀 {}", task.id, task.title);
-                }
-            },
-            Err(err) => {
-                let colorize = Color::Red("Failed 💔");
-                println!("\n{}", format!("[ {} ] Task complet failed. Error: {err:?}", colorize));
-            },
         }
     }
 

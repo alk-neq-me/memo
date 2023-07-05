@@ -130,7 +130,7 @@ pub fn calculate_completion_percentage(conn: &Connection) -> Result<f64> {
 
     let result = stmt.query_row([], |row| {
         let total_tasks: i64 = row.get(0)?;
-        let completed_tasks: i64 = row.get(1)?;
+        let completed_tasks: i64 = row.get(1).unwrap_or(0);
 
         // Calculate the completion percentage
         let completion_percentage = if total_tasks > 0 {
@@ -146,7 +146,6 @@ pub fn calculate_completion_percentage(conn: &Connection) -> Result<f64> {
 }
 
 pub fn remove_task(conn: &Connection, id: &u32) -> Result<()> {
-    conn.execute("PRAGMA foreign_keys = ON", [])?;
 	conn.execute(r#"
         DELETE FROM task
         WHERE id = ?1
